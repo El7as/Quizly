@@ -44,8 +44,9 @@ Environment Variables
 Installation
     git clone <your-repo-url>
     cd project
-    python -m venv venv
+    python -m venv env
     source venv/bin/activate  # Windows: venv\Scripts\activate
-    pip install -r 
-
-    
+    pip install -r requirements.txt
+    python manage.py makemigrations
+    python manage.py migrate
+    python manage.py runserver
