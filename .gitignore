@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 *.sqlite3
 *.log
+youtube_audio_extractor.py
 
 # Virtual Environment
 env/
@@ -18,3 +19,4 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+

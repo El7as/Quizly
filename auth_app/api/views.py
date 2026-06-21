@@ -10,9 +10,20 @@ from .serializers import RegisterSerializer, LoginSerializer
 
 
 class RegisterView(APIView):
+    """
+    Handles user registration requests.
+
+    This endpoint accepts POST requests containing user registration data.
+    It validates the incoming payload using the RegisterSerializer and,
+    if valid, creates a new user account in the system.
+    """
 
 
     def post(self, request):
+        """
+        Create a new user account.
+        """
+
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -22,9 +33,20 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    """
+    Handles user login and JWT token creation.
+
+    This endpoint validates the provided credentials using the LoginSerializer.
+    If authentication is successful, it generates a refresh token and access token
+    using SimpleJWT and stores both tokens in HTTP-only cookies.
+    """
 
 
     def post(self, request):
+        """
+        Authenticate a user and return JWT tokens in cookies.
+        """
+
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
@@ -41,9 +63,19 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
+    """
+    Handles user logout by invalidating the refresh token and
+    removing authentication cookies.
+
+    This endpoint requires the user to be authenticated.
+    """
     
 
     def post(self, request):
+        """
+        Log out the authenticated user.
+        """
+
         try:
             refresh_token = request.COOKIES.get('refresh_token')
             if refresh_token:
@@ -63,12 +95,22 @@ class LogoutView(APIView):
 
 
 class RefreshTokenView(APIView):
+    """
+    Issues a new access token using a valid refresh token stored in cookies.
+
+    This endpoint does not require a request body. It reads the refresh token
+    from the user's cookies, validates it, and returns a new access token.
+    """
 
 
     def post(self, request):
+        """
+        Refresh the access token.
+        """
+
         refresh_token = request.COOKIES.get('refresh_token')
         if not refresh_token:
-            return Response({'detail': 'Refresh token fehlt oder ungültig'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': 'Refresh token missing or invalid'}, status=status.HTTP_401_UNAUTHORIZED)
         
         try:
             refresh = RefreshToken(refresh_token)
@@ -80,8 +122,6 @@ class RefreshTokenView(APIView):
             return response
         
         except TokenError:
-            return Response({'detail': 'Refresh token ungültig oder abgelaufen'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': 'Refresh token invalid or expired'}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    

@@ -6,41 +6,50 @@ from rest_framework.response import Response
 from ..models import Quiz, Question, Option
 
 from .serializers import QuizSerializer, QuizListSerializer
-
-# from .youtube_audio_extractor import YouTubeAudioExtractor
-from .YouTubeTranscriptExtractor import YouTubeTranscriptExtractor
-from .gemini_quiz_generator import GeminiQuizGenerator
+from ..services.YouTubeTranscriptExtractor import YouTubeTranscriptExtractor
+from ..services.gemini_quiz_generator import GeminiQuizGenerator
 
 
 
 class QuizView(APIView):
+    """
+    Handles listing quizzes (GET) and generating a new quiz from a YouTube URL (POST).
+    """
+
     permission_classes = [permissions.IsAuthenticated]
 
 
     def get(self, request):
+        """
+        Return all quizzes belonging to the authenticated user.
+        """
+
         quizzes = Quiz.objects.filter(user=request.user)
         serializer = QuizListSerializer(quizzes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
     def post(self, request):
+        """
+        Create a new quiz from a YouTube video URL.
+        """
+
         video_url = request.data.get('url')
+
         if not video_url or not ('youtube.com' in video_url or 'youtu.be' in video_url):
-            return Response({'detail': 'Ungültige URL oder Anfragedaten.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Invalid URL or request data.'}, status=status.HTTP_400_BAD_REQUEST)
         
         try: 
-            # Audio & Transkript erzeugen
-            extractor = YouTubeTranscriptExtractor() # YouTubeAudioExtractor
+           
+            extractor = YouTubeTranscriptExtractor() 
             transcript = extractor.get_transcript(video_url)
 
-            # Quizfragen generieren
             generator = GeminiQuizGenerator()
             quiz_data = generator.generate_quiz(transcript)
 
-            # Quiz speichern
             quiz = Quiz.objects.create(user=request.user, title='Automatisch generiertes Quiz',
                                        description='Erstellt aus YouTube-Video', url=video_url)
             
-            # Fragen speichern
             for q in quiz_data:
                 question = Question.objects.create(quiz=quiz, text=q['question'])
                 for opt in q['options']:
@@ -53,24 +62,21 @@ class QuizView(APIView):
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
 
-                
-    #     quiz = Quiz.objects.create(user=request.user, title='Ouiz Title', description='Quiz Description', url=video_url)
-    #     question = Question.objects.create(quiz=quiz, text='Question 1')
-    #     Option.objects.create(question=question, text='Option A', is_correct=True)
-    #     Option.objects.create(question=question, text='Option B', is_correct=True)
-    #     Option.objects.create(question=question, text='Option C', is_correct=True)
-    #     Option.objects.create(question=question, text='Option D', is_correct=True)
-
-    #     serializer = QuizSerializer(quiz)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
 
 class QuizDetailView(APIView):
+    """
+    Handles retrieving, updating, and deleting a single quiz.
+    Only the quiz owner is allowed to access or modify it.
+    """
+
     permission_classes = [permissions.IsAuthenticated]
 
 
     def get_object(self, pk):
+        """
+        Return the quiz instance or None if it does not exist.
+        """
+
         try:
             return Quiz.objects.get(pk=pk)
         except Quiz.DoesNotExist:
@@ -78,32 +84,40 @@ class QuizDetailView(APIView):
         
 
     def get(self, request, pk):
+        """
+        Retrieve a single quiz if the user owns it.
+        """
+
         quiz = self.get_object(pk)
 
         if quiz is None:
-            return Response({'detail': 'Quiz nicht gefunden'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if quiz.user != request.user:
-            return Response({'detail': 'Keine Berechtigung'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'detail': 'No authorization'}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = QuizListSerializer(quiz)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
     def patch(self, request, pk):
+        """
+        Update quiz title and description. Only the owner may update the quiz.
+        """
+
         quiz = self.get_object(pk)
 
         if quiz is None:
-            return Response({'detail': 'Quiz nicht gefunden'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if quiz.user != request.user:
-            return Response({'detail': 'Keine Berechtigung'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'detail': 'No authorization'}, status=status.HTTP_403_FORBIDDEN)
 
         title = request.data.get('title')
         description = request.data.get('description')
 
         if not title or not description:
-            return Response({'detail': 'title und description müssen angegeben werden'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Title and description must be provided'}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer = QuizListSerializer(quiz, data=request.data, partial=True)
         if serializer.is_valid():
@@ -113,13 +127,17 @@ class QuizDetailView(APIView):
     
 
     def delete(self, request, pk):
+        """
+        Delete a quiz if the user owns it.
+        """
+
         quiz = self.get_object(pk)
 
         if quiz is None:
-            return Response({'detail': 'Quiz nicht gefunden'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if quiz.user != request.user:
-            return Response({'detail': 'Keine Berechtigung'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'detail': 'No authorization'}, status=status.HTTP_403_FORBIDDEN)
         
         quiz.delete()
         return Response(status=status.HTTP_200_OK)
