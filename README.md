@@ -61,24 +61,18 @@ GEMINI_API_KEY=your_api_key_here
 ## Installation
 
 ```bash
-git clone <your-repo-url>
+```git clone <your-repo-url>
 
+```cd project
 
-cd project
+```python -m venv env
 
+```source venv/bin/activate # Windows: venv\Scripts\activate
 
-python -m venv env
+```pip install -r requirements.txt
 
+```python manage.py makemigrations
 
-source venv/bin/activate # Windows: venv\Scripts\activate
+```python manage.py migrate
 
-pip install -r requirements.txt
-
-
-python manage.py makemigrations
-
-
-python manage.py migrate
-
-
-python manage.py runserver
+```python manage.py runserver
