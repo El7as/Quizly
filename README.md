@@ -1,80 +1,63 @@
 # Quizly Backend
 
-Quizly is a Django‑based backend application that automatically generates quizzes from YouTube videos.
+Quizly is a Django‑based backend application that automatically generates quizzes from YouTube videos.  
 Users authenticate, submit a YouTube URL, and the system extracts the transcript, processes it with Google Gemini, and returns a fully structured quiz with questions, options, and correct answers.
 
 ---
 
 ## Features
 
-User Authentication
-    - Registration & login using Django REST Framework
-    - JWT authentication with HTTP‑only cookies
+### User Authentication
+- Registration & login using Django REST Framework  
+- JWT authentication stored in HTTP‑only cookies  
 
-YouTube Transcript Extraction
-    - Audio download via yt-dlp
-    - Local transcription using Whisper
+### YouTube Transcript Extraction
+- Audio download via `yt-dlp`  
+- Local transcription using Whisper  
 
-AI‑Generated Quizzes
-    - Powered by Google Gemini (Flash 3.5)
-    - 10 questions per quiz
-    - 4 answer options per question
-    - Correct answer automatically assigned
+### AI‑Generated Quizzes
+- Powered by Google Gemini (Flash 3.5)  
+- 10 questions per quiz  
+- 4 answer options per question  
+- Correct answer automatically assigned  
 
-Quiz Management
-    - Create quizzes from YouTube URLs
-    - List all quizzes belonging to the authenticated user
-    - Retrieve, update, and delete quizzes
-    - Nested serialization (Quiz → Questions → Options)
+### Quiz Management
+- Create quizzes from YouTube URLs  
+- List all quizzes belonging to the authenticated user  
+- Retrieve, update, and delete quizzes  
+- Nested serialization (Quiz → Questions → Options)  
 
-Clean, modular architecture
-    - auth_app for authentication
-    - quizly_app for quiz logic
-    - utils for AI and transcript processing
+### Clean, modular architecture
+- `auth_app` → authentication  
+- `quizly_app` → quiz logic  
+- `utils` → AI and transcript processing  
 
 ---
 
-## Requirements
+## Django Settings & Environment Variables
 
-    - Python 3.10+
+The project uses `python-dotenv` to load environment variables.
 
-    - Django 5+
+### Example from `settings.py`
 
-    - Django REST Framework
+```python
+from dotenv import load_dotenv
+import os
 
-    - yt-dlp
+load_dotenv()
 
-    - ffmpeg (must be installed globally)
+SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = os.getenv("DEBUG") == "True"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-    - Whisper (local)
-
-    - Google Gemini API key
-
-Environment Variables
-    Create a .env file in the project root:
-
-
-## Environment Variables
-GEMINI_API_KEY=your_api_key_here
-
-
-## Installation
-
-```bash
 git clone <your-repo-url>
-
 cd project
-
 python -m venv env
-
-source venv/bin/activate # Windows: venv\Scripts\activate
-
+source env/bin/activate  # Windows: env\Scripts\activate
 pip install -r requirements.txt
-
 python manage.py makemigrations
-
 python manage.py migrate
-
 python manage.py runserver
 
-
+---

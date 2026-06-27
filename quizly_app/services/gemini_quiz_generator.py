@@ -6,7 +6,7 @@ from google import genai
 
 class GeminiQuizGenerator:
     """
-    Generates quiz questions from a transcript using the Gemini API.
+    A service class responsible for generating quiz questions from a transcript using the Google Gemini API.
     """
 
 
@@ -17,7 +17,7 @@ class GeminiQuizGenerator:
 
         api_key = os.getenv('GEMINI_API_KEY')
         if not api_key:
-            raise ValueError('GEMINI_API_KEY wurde nicht gesetzt oder konnte nicht erkannt werden')
+            raise ValueError('GEMINI_API_KEY is not set or could not be found.')
         
         self.client = genai.Client(api_key=api_key)
         self.model_name = 'gemini-3.5-flash'
@@ -56,12 +56,12 @@ class GeminiQuizGenerator:
             text = response.text.strip()
 
         except Exception as e:
-            raise Exception(f'Fehler bei der Gemini API: {str(e)}')
+            raise Exception(f'Gemini API error: {str(e)}')
         
         try:
             quiz_data = json.loads(text)
         except json.JSONDecodeError:
-            raise ValueError('Gemini Antwort konnte nicht als JSON geparst werden. Antwort war :\n' + text)
+            raise ValueError('Gemini response could not be parsed as JSON. Response was:\n' + text)
         
         return quiz_data
     

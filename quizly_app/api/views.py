@@ -31,7 +31,14 @@ class QuizView(APIView):
 
     def post(self, request):
         """
-        Create a new quiz from a YouTube video URL.
+        Handle POST requests to create a new quiz from a YouTube video URL.
+
+        Workflow:
+        1. Validate the incoming YouTube URL.
+        2. Extract the transcript using YouTubeTranscriptExtractor.
+        3. Generate quiz questions using GeminiQuizGenerator.
+        4. Create the Quiz, Question, and Option objects in the database.
+        5. Return the serialized quiz data.
         """
 
         video_url = request.data.get('url')
@@ -102,7 +109,16 @@ class QuizDetailView(APIView):
 
     def patch(self, request, pk):
         """
-        Update quiz title and description. Only the owner may update the quiz.
+        Update the title and description of an existing quiz.
+        Only the owner of the quiz is allowed to perform this update.
+
+        Workflow:
+        1. Retrieve the quiz by ID.
+        2. Check if the quiz exists.
+        3. Verify that the authenticated user is the owner.
+        4. Validate incoming data (title + description must be provided).
+        5. Partially update the quiz using the serializer.
+        6. Return updated quiz data.
         """
 
         quiz = self.get_object(pk)
