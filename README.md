@@ -34,7 +34,7 @@ Users authenticate, submit a YouTube URL, and the system extracts the transcript
 
 ---
 
-## Django Settings & Environment Variables
+## Django Settings 
 
 The project uses `python-dotenv` to load environment variables.
 
@@ -45,12 +45,20 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = os.getenv("DEBUG") == "True"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 ```
+
+
+##  Environment Variables
+```
+SECRET_KEY = your_django_secret_key
+GEMINI_API_KEY = your_gemini_api_key
+DATABASE_URL=sqlite:///db.sqlite3
+DEBUG = True
+ALLOWED_HOSTS = 127.0.0.1,localhost
+```
+
+
+## Installation
 
 ```
 git clone <your-repo-url>
